@@ -3,7 +3,9 @@
 [Project IRIS Light](https://github.com/kwakminoo/Project-IRIS-Light) 의 소개 페이지입니다.
 시연 영상과 음성 안내가 들어 있어 용량이 커서 앱 저장소와 분리했습니다.
 
-**https://cjh030906.github.io/iris-light-site/**
+**기본 URL:** https://iris-light-site.vercel.app/
+
+(미러) https://cjh030906.github.io/iris-light-site/
 
 ## 구성
 
@@ -16,8 +18,8 @@
 
 ## 고칠 때
 
-`index.html` 만 고쳐서 `main` 에 올리면 GitHub Pages 가 바로 반영합니다.
-빌드 단계는 없습니다.
+`index.html` 만 고쳐서 `main` 에 올리면 Vercel·GitHub Pages 가 반영합니다.
+빌드 단계는 없습니다. 공개 기본 주소는 **https://iris-light-site.vercel.app/** 입니다.
 
 음성 안내 문구를 바꾸면 해당 mp3 도 같이 다시 만들어야 합니다. 원문 텍스트는
 따로 보관하지 않으므로, 앱 저장소의 `.venv-voice` 에서 이렇게 확인하고 다시 만듭니다.
@@ -45,9 +47,15 @@ python tools\polish_voice.py media\voice\07-install.mp3
 
 ## 다운로드 버튼
 
-설치 프로그램은 앱 저장소의 릴리스에서 받습니다. 주소가 고정이라 에셋 이름이
-`IRIS-Setup.exe` 여야 합니다.
+설치 프로그램은 앱 저장소 GitHub Releases의 **공식 HTTPS** 에서만 제공합니다.
+Drive·Gmail·카카오톡 등 제3자 채널로 EXE를 전달하지 마세요 (차단·손상 빈번).
 
 ```
 https://github.com/kwakminoo/Project-IRIS-Light/releases/latest/download/IRIS-Setup.exe
 ```
+
+에셋 이름은 `IRIS-Setup.exe` 고정입니다. 버전·SHA-256·크기는 페이지가
+GitHub Releases API(폴백: 앱 저장소 `docs/download/latest.json`)에서 표시합니다.
+
+문제 해결(브라우저 차단 / 회사 정책 / 해시 불일치 / SmartScreen / 메신저 전달)은
+`#install` 섹션 accordion에 있습니다. EXE 확장자 위장·암호 ZIP 우회는 하지 않습니다.
