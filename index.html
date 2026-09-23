@@ -966,7 +966,7 @@ footer .fr a:hover{color:var(--cyan)}
       </div>
       <div class="dl-meta rv d2" id="dlMeta" aria-live="polite">
         <dl>
-          <dt>파일</dt><dd id="dlFilename">IRIS-Setup.exe</dd>
+          <dt>파일</dt><dd id="dlFilename">IRIS-Setup-0.1.5.exe</dd>
           <dt>버전</dt><dd id="dlVersion">—</dd>
           <dt>게시</dt><dd id="dlPublished">—</dd>
           <dt>크기</dt><dd id="dlSize">—</dd>
@@ -977,11 +977,11 @@ footer .fr a:hover{color:var(--cyan)}
         <p class="dl-status" id="dlStatus">릴리스 메타를 불러오는 중…</p>
       </div>
       <div class="btns rv d3">
-        <a class="btn btn-p" id="dlBtn" href="https://github.com/kwakminoo/Project-IRIS-Light/releases/latest/download/IRIS-Setup.exe" download="IRIS-Setup.exe" rel="noopener">
+        <a class="btn btn-p" id="dlBtn" href="https://github.com/kwakminoo/Project-IRIS-Light/releases/latest/download/IRIS-Setup-0.1.5.exe" download="IRIS-Setup-0.1.5.exe" rel="noopener">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 20h16"/></svg>
           Windows용 IRIS Setup 다운로드
         </a>
-        <a class="btn" id="dlChecksumBtn" href="https://github.com/kwakminoo/Project-IRIS-Light/releases/latest/download/IRIS-Setup.exe.sha256" rel="noopener">SHA-256 파일 ↗</a>
+        <a class="btn" id="dlChecksumBtn" href="https://github.com/kwakminoo/Project-IRIS-Light/releases/latest/download/IRIS-Setup-0.1.5.exe.sha256" rel="noopener">SHA-256 파일 ↗</a>
         <a class="btn" href="https://github.com/kwakminoo/Project-IRIS-Light/releases" rel="noopener">GitHub Releases ↗</a>
       </div>
       <div class="dl-help rv d3">
@@ -1027,7 +1027,7 @@ footer .fr a:hover{color:var(--cyan)}
     </div>
   </div>
   <div class="meta l"><b>07</b> / Install</div>
-  <div class="meta r">IRIS-Setup.exe → IRIS</div>
+  <div class="meta r">IRIS-Setup-0.1.5.exe → IRIS</div>
 </section>
 
 <!-- ============ 08 · 확장성 ============ -->
@@ -1609,6 +1609,7 @@ window.addEventListener('resize', sizePath);
 (function(){
   var REPO = 'kwakminoo/Project-IRIS-Light';
   var ASSET = 'IRIS-Setup.exe';
+  var ASSET_VERSIONED_RE = /^IRIS-Setup-\d+\.\d+\.\d+\.exe$/;
   var FALLBACK_META = 'https://raw.githubusercontent.com/' + REPO + '/main/docs/download/latest.json';
   var API = 'https://api.github.com/repos/' + REPO + '/releases/latest';
 
@@ -1644,16 +1645,16 @@ window.addEventListener('resize', sizePath);
   function setText(node, t){ if(node) node.textContent = t; }
 
   function applyMeta(m){
-    var name = m.filename || ASSET;
+    var name = m.display_filename || m.filename || ASSET;
     var ver = m.product_version || m.tag_name || m.tag || '—';
     var tag = m.tag || m.tag_name || '';
     var size = m.size_bytes || m.size || 0;
     var sha = (m.sha256 || '').replace(/^sha256:/i, '').toLowerCase();
-    var url = m.download_url || ('https://github.com/' + REPO + '/releases/latest/download/' + ASSET);
-    var sumUrl = m.checksum_url || ('https://github.com/' + REPO + '/releases/latest/download/' + ASSET + '.sha256');
+    var url = m.download_url || ('https://github.com/' + REPO + '/releases/latest/download/' + name);
+    var sumUrl = m.checksum_url || ('https://github.com/' + REPO + '/releases/latest/download/' + name + '.sha256');
     var signed = !!m.code_signed;
 
-    setText(el.filename, name + (m.display_filename && m.display_filename !== name ? ' (표시: ' + m.display_filename + ')' : ''));
+    setText(el.filename, name);
     setText(el.version, tag ? (ver + ' · ' + tag) : String(ver));
     setText(el.published, fmtDate(m.published_at));
     setText(el.size, size ? fmtBytes(size) : '—');
@@ -1679,25 +1680,31 @@ window.addEventListener('resize', sizePath);
 
   function fromGithubRelease(rel){
     var assets = rel.assets || [];
-    var exe = null, shaAsset = null;
+    var exe = null, shaAsset = null, stable = null;
     for(var i = 0; i < assets.length; i++){
-      if(assets[i].name === ASSET) exe = assets[i];
-      if(assets[i].name === ASSET + '.sha256') shaAsset = assets[i];
+      var n = assets[i].name || '';
+      if(ASSET_VERSIONED_RE.test(n)) exe = assets[i];
+      if(n === ASSET) stable = assets[i];
     }
-    if(!exe) throw new Error('릴리스에 ' + ASSET + ' 없음');
+    if(!exe) exe = stable;
+    if(!exe) throw new Error('릴리스에 IRIS-Setup-*.exe 없음');
+    for(var j = 0; j < assets.length; j++){
+      if(assets[j].name === exe.name + '.sha256') shaAsset = assets[j];
+    }
     var digest = (exe.digest || '').replace(/^sha256:/i, '').toLowerCase();
+    var fname = exe.name;
     return {
-      filename: ASSET,
-      display_filename: 'IRIS-Setup-' + String(rel.tag_name || '').replace(/^v/, '') + '.exe',
+      filename: fname,
+      display_filename: fname,
       product_version: String(rel.name || rel.tag_name || '').replace(/^IRIS Light\s*/i, '') || rel.tag_name,
       tag: rel.tag_name,
       published_at: rel.published_at,
       size_bytes: exe.size,
       sha256: digest,
-      download_url: 'https://github.com/' + REPO + '/releases/latest/download/' + ASSET,
+      download_url: 'https://github.com/' + REPO + '/releases/latest/download/' + fname,
       checksum_url: shaAsset
-        ? ('https://github.com/' + REPO + '/releases/latest/download/' + ASSET + '.sha256')
-        : ('https://raw.githubusercontent.com/' + REPO + '/main/docs/download/' + ASSET + '.sha256'),
+        ? ('https://github.com/' + REPO + '/releases/latest/download/' + fname + '.sha256')
+        : ('https://raw.githubusercontent.com/' + REPO + '/main/docs/download/' + fname + '.sha256'),
       code_signed: false,
       requirements: { os: 'Windows 10/11 (x64)', ram: '8GB (권장 16GB)', disk: '약 20GB' }
     };
